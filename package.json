@@ -1,0 +1,17 @@
+{
+  "name": "gv",
+  "version": "1.0.0",
+  "description": "Git migrated database viewer",
+  "scripts": {
+    "start": "NODE_ENV=development node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "e70838@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "prismjs": "^1.19.0",
+    "pug": "^2.0.4",
+    "serve-favicon": "^2.5.0"
+  }
+}
