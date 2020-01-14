@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "prismjs": "^1.19.0",
     "pug": "^2.0.4",
     "serve-favicon": "^2.5.0"
   }
