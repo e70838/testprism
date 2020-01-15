@@ -1,0 +1,29 @@
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    title= title
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css')
+  body
+    header
+      h1= repo
+    table.table
+      thead
+        th Num
+        th Version
+        th Synopsis
+        th Objects
+      tbody
+        each val, index in tasks
+          tr
+            td= index
+            td= val.Version
+            td= val.Synopsis
+            td
+              small
+                each obj, index in val.Objects
+                  if index
+                    br
+                  a(href='obj/'+escape(obj.Objectname))= obj.Objectname
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js')
+  script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js')
