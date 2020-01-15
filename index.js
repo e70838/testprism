@@ -24,7 +24,7 @@ rl.on('close', function(line) {
         tasks.split(',').forEach(function(item, index) {
             if (all_tasks.hasOwnProperty(item)) {
                 all_tasks[item].Objects.push(obj);
-            } else if ("<void>".localeCompare(item)) {
+            } else if ('<void>'.localeCompare(item)) {
                 console.log('task ' + item + ' not found');
             }
         });
@@ -66,15 +66,33 @@ app.get('/', function (req, res) {
 // get content of an object
 app.get('/obj/:id', function (req, res) {
     const {type, name, instance, version} = parse_object_name(req.params.id);
-    const lang = knownLang[type] || 'language-none';
-    const data = path.join(process.env.REPO, type, name, instance, version, 'content');
-    fs.readFile(data, 'utf8', function(err, contents) {
-        if (err)
-            res.render('notfound', {title: req.params.id, message: err});
-        else
-            res.render('highlight', { title: req.params.id, message: contents, lang: lang })
-    });
+    if ('project'.localeCompare(type) === 0) {
+        res.render('project', {title: req.params.id, message: recRead(path.join(process.env.REPO, type, name, instance, version))});
+    } else {
+        const lang = knownLang[type] || 'language-none';
+        const data = path.join(process.env.REPO, type, name, instance, version, 'content');
+        fs.readFile(data, 'utf8', function(err, contents) {
+            if (err)
+                res.render('notfound', {title: req.params.id, message: err});
+            else
+                res.render('highlight', { title: req.params.id, message: contents, lang: lang })
+        });
+    }
 })
+
+// helper function to display a project
+const recRead = (objectnamethePath) => {
+    return fs.readFileSync(path.join(objectnamethePath, 'ls')).toString().split('\n').map(x => {
+        if (x.length == 0) return ''; // skip blank lines
+        const {type, name, instance, version} = parse_object_name(x);
+        // recurse into dirs
+        if ('dir'.localeCompare(type) === 0) {
+            return '<li><span class="folder"><a href="/obj/' + escape(x)+ '">' + x + '</a></span><ul>' + recRead(path.join(objectnamethePath, name)) + '</ul></li>';
+        } else {
+            return '<li><span class="file"><a href="/obj/' + escape(x)+ '">' + x + '</a></span></li>';
+        }
+        }).join('\n');
+};
 
 // get raw content of an object
 app.get('/raw/:id', function (req, res) {
@@ -108,12 +126,12 @@ app.listen(3000, function () {
 const parse_object_name = (objectname) => {
     // extract fourth part: instance
     const ri = objectname.lastIndexOf(':');
-    if (ri === -1) throw 'wrong objectname $objectname does not contain : before instance';
+    if (ri === -1) throw `wrong objectname ${objectname} does not contain : before instance`;
     const instance = objectname.substring(ri + 1);
 
     // extract third part: type
     const cri = objectname.lastIndexOf(':', ri - 1);
-    if (cri == -1) throw 'wrong objectname $objectname does not contain : before type';
+    if (cri == -1) throw `wrong objectname ${objectname} does not contain : before type`;
     const ctype = objectname.substring(cri + 1, ri);
 
     // extract second part: version
@@ -121,7 +139,7 @@ const parse_object_name = (objectname) => {
     if (vri === -1) {
         vri = objectname.lastIndexOf('-', cri - 1);
     }
-    if (vri === -1) throw 'wrong objectname $objectname does not contain : or - before version';
+    if (vri === -1) throw `wrong objectname ${objectname} does not contain : or - before version`;
     const version = objectname.substring(vri + 1, cri);
 
     // first part: name
