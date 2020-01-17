@@ -7,10 +7,13 @@ html
     link(rel='stylesheet', href='/jquery.treeview.css')
   body
     header
-      h1 treeview test
-      p based on github.com/jzaefferer/jquery-treeview
+      h1 Project 
+        a(href='/hist/'+escape(title))= title
       ul.filetree#browser
         != message
+    footer
+      p Created using 
+        a(href='https://github.com/jzaefferer/jquery-treeview') github.com/jzaefferer/jquery-treeview
   script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js')
   script(src='/jquery.treeview.js')
   script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js')

@@ -44,6 +44,7 @@ const knownLang = {java: 'language-java',
                    csrc: 'language-bash',
                    html: 'language-markup',
                    incl: 'language-cpp',
+                   makefile: 'language-makefile',
                    perl: 'language-perl',
                    shsrc: 'language-bash',
                    txt: 'language-bash'};
