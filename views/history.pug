@@ -6,6 +6,10 @@ html
   body
     header
       h1= 'history of ' + title
-    pre.line-numbers
-      code.language-none= message
-    script(src='/prism.js')
+    div.code-toolbar
+      pre.line-numbers.language-none
+        code.language-none!= message
+          span.line-numbers-rows
+            each val, index in message.split('\n')
+              if index
+                span

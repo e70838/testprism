@@ -6,6 +6,7 @@ var readline = require('readline');
 
 // read all tasks
 var all_tasks = {};
+var all_objs = {};
 let rl = readline.createInterface({
     input: fs.createReadStream(path.join(process.env.REPO, 'all_task.csv'))
 });
@@ -21,6 +22,7 @@ rl.on('close', function(line) {
     rl2.on('line', function (line) {
         const [objectname, state, author, release, tasks, time] = line.split(';');
         const obj = {Objectname: objectname, State: state, Author: author, Release: release, Time:time};
+        all_objs[objectname] = obj;
         tasks.split(',').forEach(function(item, index) {
             if (all_tasks.hasOwnProperty(item)) {
                 all_tasks[item].Objects.push(obj);
@@ -49,6 +51,9 @@ const knownLang = {java: 'language-java',
                    shsrc: 'language-bash',
                    txt: 'language-bash'};
 
+// binary types that may be better displayed by browser than by prism highlighter
+const binaryTypes = /^binary|bmp|doc|gif|gzip|jar|jpeg|tar|zip$/;
+
 // server
 var app = express()
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
@@ -69,6 +74,13 @@ app.get('/obj/:id', function (req, res) {
     const {type, name, instance, version} = parse_object_name(req.params.id);
     if ('project'.localeCompare(type) === 0) {
         res.render('project', {title: req.params.id, message: recRead(path.join(process.env.REPO, type, name, instance, version))});
+    } else if (binaryTypes.test(type)) {
+        const data = path.join(process.env.REPO, type, name, instance, version, 'content');
+        const rs = fs.createReadStream(data);
+        rs.on('error', function(error) {
+            res.render('notfound', {title: req.params.id, message: err});});
+        res.statusCode = '200';
+        rs.pipe(res);
     } else {
         const lang = knownLang[type] || 'language-none';
         const data = path.join(process.env.REPO, type, name, instance, version, 'content');
@@ -115,7 +127,23 @@ app.get('/hist/:id', function (req, res) {
         if (err)
             res.render('notfound', {title: req.params.id, message: err});
         else
-            res.render('history', { title: req.params.id, message: contents })
+            res.render('history', { title: req.params.id, message: contents.split('\n').map (s => {
+                var result = `${s}`;
+                if (s.charAt(0) === '\t') {
+                    const objectname = s.substring(1);
+                    result = `  <a class="token url" href="/obj/${escape(objectname)}">${objectname}</a>`;
+                } else {
+                    const m = result.match(/^Object:\s+(\S+)\s\((\S+)\)$/);
+                    if (m !== null) {
+                        const [dummy, nameVersion, typeInstance] = m;
+                        const objectname = nameVersion + ':' + typeInstance;
+                        if (all_objs.hasOwnProperty(objectname)) {
+                            result = `Object:  <a class="token url" href="/obj/${escape(objectname)}">${nameVersion} (${typeInstance})</a>`;
+                        }
+                    }
+                }
+                return result;
+            }).join('\n') });
     });
 })
 
